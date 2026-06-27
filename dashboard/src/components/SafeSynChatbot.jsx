@@ -96,7 +96,7 @@ Current Dashboard Context:
 - Active models: Gemma-2-2B Fine-Tuned (for clinical JSON schemas) & CTGAN Tabular Checker (for structural correlations)`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
