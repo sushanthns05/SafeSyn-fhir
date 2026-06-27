@@ -743,4 +743,93 @@ body {
   transform: translateX(4px);
 }
 
+/* Heatmap cell highlights */
+.heatmap-cell-red {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--color-danger);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.1);
+}
+
+.heatmap-cell-amber {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--color-warning);
+}
+
+.heatmap-cell-green {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--color-success);
+}
+
+/* Before vs After comparison container */
+.comparison-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .comparison-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparison-card {
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.comparison-card.raw {
+  border-color: rgba(239, 68, 68, 0.2);
+  box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.05);
+}
+
+.comparison-card.synth {
+  border-color: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.05);
+}
+
+.comparison-row-highlight {
+  font-family: monospace;
+  font-size: 11px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  word-break: break-all;
+}
+
+.comparison-row-highlight.red {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.comparison-row-highlight.green {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.15);
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.compliance-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  font-size: 12px;
+}
+
+
 
