@@ -112,7 +112,7 @@ export default function PrivacyAudit() {
             </h3>
 
             {/* Circular Gauge */}
-            <div style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 100 100">
                 <circle 
                   cx="50" cy="50" r="40" 

@@ -327,12 +327,19 @@ export default function AISynthesis({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-primary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                <div className="telemetry-indicator-ring">
+                <div className="telemetry-indicator-ring" style={{ position: 'relative', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 36 36">
                     <path stroke="var(--border-color)" strokeWidth="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     <path stroke="var(--color-primary)" strokeWidth="3" strokeDasharray={`${gpuLoad}, 100`} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                   </svg>
-                  <span style={{ position: 'absolute', fontSize: '10px', fontWeight: 800 }}>{gpuLoad}%</span>
+                  <span style={{ 
+                    position: 'absolute', 
+                    top: '50%', 
+                    left: '50%', 
+                    transform: 'translate(-50%, -50%)', 
+                    fontSize: '10px', 
+                    fontWeight: 800 
+                  }}>{gpuLoad}%</span>
                 </div>
                 <div>
                   <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>GPU Core Load</span>
@@ -341,12 +348,19 @@ export default function AISynthesis({
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-primary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                <div className="telemetry-indicator-ring">
+                <div className="telemetry-indicator-ring" style={{ position: 'relative', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 36 36">
                     <path stroke="var(--border-color)" strokeWidth="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     <path stroke="var(--color-secondary)" strokeWidth="3" strokeDasharray={`${(vramUsage / 16) * 100}, 100`} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                   </svg>
-                  <span style={{ position: 'absolute', fontSize: '9px', fontWeight: 800 }}>{vramUsage}G</span>
+                  <span style={{ 
+                    position: 'absolute', 
+                    top: '50%', 
+                    left: '50%', 
+                    transform: 'translate(-50%, -50%)', 
+                    fontSize: '9px', 
+                    fontWeight: 800 
+                  }}>{vramUsage}G</span>
                 </div>
                 <div>
                   <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>VRAM Allocated</span>

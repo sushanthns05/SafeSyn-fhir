@@ -196,7 +196,7 @@ export default function DashboardOverview({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '10px 0' }}>
-            <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 100 100">
                 <circle 
                   cx="50" cy="50" r="40" 
@@ -215,7 +215,18 @@ export default function DashboardOverview({
                   style={{ transition: 'stroke-dashoffset 1s ease-out' }}
                 />
               </svg>
-              <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ 
+                position: 'absolute', 
+                top: '50%', 
+                left: '50%', 
+                transform: 'translate(-50%, -50%)', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                textAlign: 'center'
+              }}>
                 <span className="gradient-text" style={{ fontSize: '24px', fontWeight: 800 }}>{privacyScore}%</span>
                 <span style={{ fontSize: '8px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Score</span>
               </div>

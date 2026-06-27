@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Database, Cpu, BarChart3, ShieldCheck, Download, 
   Settings, Sun, Moon, UploadCloud, Clock, 
-  Menu, Bell, X, ShieldAlert, CheckCircle2, Home, Activity, Lock, ExternalLink
+  Menu, Bell, X, ShieldAlert, CheckCircle2, Home, Activity, Lock, ExternalLink,
+  ChevronLeft, ChevronRight, Sparkles, ChevronDown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -15,6 +16,7 @@ import PrivacyAudit from './components/PrivacyAudit';
 import Downloads from './components/Downloads';
 import SafeSynChatbot from './components/SafeSynChatbot';
 import DashboardOverview from './components/DashboardOverview';
+import SystemSettings from './components/SystemSettings';
 
 // Import parser & data
 import { parseFhirBundle, parseCsvText } from './utils/fhirParser';
@@ -42,6 +44,9 @@ export default function App() {
   const [theme, setTheme] = useState('light'); // default light as requested
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [monitorsOpen, setMonitorsOpen] = useState(true);
+  const [auditOpen, setAuditOpen] = useState(true);
+  const [actionsOpen, setActionsOpen] = useState(true);
 
   // Settings state
   const [userProfile, setUserProfile] = useState({
@@ -219,63 +224,15 @@ export default function App() {
   // Render integrated Settings Page
   const renderSettingsPage = () => {
     return (
-      <div style={{ animation: 'slide-in 0.4s ease-out', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-        <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>SYSTEM OPTIONS // PROFILE SETTINGS</span>
-          <h2 style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.5px', marginTop: '4px' }}>Console Settings</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>Manage active researcher credentials and system notification setups.</p>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '32px', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 700 }}>Researcher Profile</h3>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Full Name</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={userProfile.name}
-                onChange={(e) => {
-                  const nextVal = e.target.value;
-                  setUserProfile(prev => ({
-                    ...prev,
-                    name: nextVal,
-                    avatar: nextVal.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                  }));
-                }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Organizational Role</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={userProfile.role}
-                onChange={(e) => setUserProfile(prev => ({ ...prev, role: e.target.value }))}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '20px', marginTop: '12px' }}>
-              <div>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>Compliance Logs Alerting</span>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Trigger automated browser warnings when Epsilon drops below 1.5.</p>
-              </div>
-              <input 
-                type="checkbox" 
-                checked={notificationsEnabled}
-                onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-              />
-            </div>
-          </div>
-
-          <button className="btn-primary" style={{ alignSelf: 'flex-end' }} onClick={() => addToast('System configuration saved successfully', 'success')}>
-            Save Settings Changes
-          </button>
-        </div>
-      </div>
+      <SystemSettings 
+        userProfile={userProfile}
+        setUserProfile={setUserProfile}
+        activityLogs={activityLogs}
+        addActivity={addActivity}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        addToast={addToast}
+      />
     );
   };
 
@@ -293,6 +250,39 @@ export default function App() {
     );
   };
 
+  // Accordion Header Helper
+  const renderAccordionHeader = (title, icon, isOpen, toggleFunc) => {
+    return (
+      <div 
+        onClick={toggleFunc}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 12px',
+          borderRadius: '8px',
+          background: theme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+          border: '1px solid var(--border-color)',
+          cursor: 'pointer',
+          userSelect: 'none',
+          transition: 'all 0.2s',
+          fontSize: '10px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          color: 'var(--text-primary)',
+          marginTop: '4px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center' }}>{icon}</span>
+          <span>{title}</span>
+        </div>
+        {isOpen ? <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronRight size={12} style={{ color: 'var(--text-muted)' }} />}
+      </div>
+    );
+  };
+
   // Main UI router switch
   if (!inConsole) {
     return <LandingPage onLaunchConsole={() => {
@@ -305,111 +295,446 @@ export default function App() {
     <div className="app-container" style={{ transition: 'all 0.3s' }}>
       
       {/* Sidebar Navigation */}
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`} style={{
+        background: theme === 'dark' ? 'rgba(6, 11, 18, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+        backdropFilter: 'blur(20px)',
+        borderRight: '1px solid var(--border-color)',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        boxShadow: 'var(--sidebar-shadow)',
+        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflow: 'hidden',
+        flexShrink: 0
+      }}>
         
-        {/* Sidebar Logo */}
-        <div style={{ padding: '24px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '24px', filter: 'drop-shadow(0 0 8px rgba(37, 99, 235, 0.5))', flexShrink: 0 }}>🛡️</span>
-          {!sidebarCollapsed && (
-            <div style={{ animation: 'fade-in 0.2s ease-out' }}>
-              <h1 style={{ fontSize: '15px', fontWeight: 800, letterSpacing: '-0.3px', color: '#FFF' }}>SafeSyn AI</h1>
-              <p style={{ fontSize: '9px', color: '#64748B', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase' }}>Privacy Platform</p>
-            </div>
-          )}
-        </div>
-
-        {/* Sidebar Nav Items */}
-        <nav style={{ flexGrow: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' }}>
-          {[
-            { id: 'dashboard', label: 'Dashboard Overview', icon: <Home size={18} /> },
-            { id: 'source', label: 'Source Patients', icon: <Database size={18} /> },
-            { id: 'synthesis', label: 'AI Synthesis', icon: <Cpu size={18} /> },
-            { id: 'analytics', label: 'Fidelity & Utility', icon: <BarChart3 size={18} /> },
-            { id: 'privacy', label: 'Regulatory Audit', icon: <ShieldCheck size={18} /> },
-            { id: 'downloads', label: 'Secure Downloads', icon: <Download size={18} /> },
-            { id: 'settings', label: 'System Settings', icon: <Settings size={18} /> }
-          ].map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
-            >
-              <span style={{ display: 'flex', shrink: 0 }}>{item.icon}</span>
-              {!sidebarCollapsed && <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.label}</span>}
-            </button>
-          ))}
-        </nav>
-
-        {/* Sidebar Dataset upload & Status modules */}
-        {!sidebarCollapsed && (
-          <div style={{ padding: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
-            
-            {/* Upload Widget */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', tracking: '0.5px' }}>Ingest Patient Records</span>
-              <label style={{ border: '1px dashed rgba(255, 255, 255, 0.15)', borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s' }}>
-                <UploadCloud size={20} style={{ color: '#64748B' }} />
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#94A3B8', marginTop: '6px' }}>FHIR JSON / CSV</span>
-                <input 
-                  type="file" 
-                  accept=".json,.csv" 
-                  style={{ display: 'none' }}
-                  onChange={handleFileUpload} 
-                />
-              </label>
-            </div>
-
-            {/* Dataset status badge */}
-            <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Ingestion Status</span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: 600 }}>
-                <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', color: '#E2E8F0' }} title={activeDataset.name}>📄 {activeDataset.name}</div>
-                <div style={{ color: '#64748B' }}>Size: {activeDataset.size}</div>
-                <div style={{ marginTop: '4px' }}>
-                  {activeDataset.isSecured ? (
-                    <span className="badge badge-green" style={{ fontSize: '9px', padding: '2px 8px' }}><CheckCircle2 size={10} style={{ marginRight: '4px' }} /> Synthesized</span>
-                  ) : (
-                    <span className="badge badge-red" style={{ fontSize: '9px', padding: '2px 8px', animation: 'pulse-glow 1.5s infinite' }}><ShieldAlert size={10} style={{ marginRight: '4px' }} /> Raw Records</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* Sidebar Profile & settings */}
-        <div style={{ padding: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(0, 0, 0, 0.25)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(124, 58, 237, 0.2)', border: '1px solid var(--color-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontWeight: 800, fontSize: '12px', flexShrink: 0 }}>
-              {userProfile.avatar}
-            </div>
+        {/* Sidebar Logo Header */}
+        <div 
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          style={{ 
+            padding: sidebarCollapsed ? '16px 0' : '16px 20px', 
+            borderBottom: '1px solid var(--border-color)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: sidebarCollapsed ? 'center' : 'space-between',
+            background: theme === 'dark' ? 'linear-gradient(180deg, rgba(30, 41, 59, 0.2) 0%, rgba(15, 23, 42, 0) 100%)' : 'linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%)',
+            cursor: 'pointer'
+          }}
+          title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '22px', filter: 'drop-shadow(0 0 8px var(--color-primary))', flexShrink: 0 }}>🛡️</span>
             {!sidebarCollapsed && (
-              <div style={{ overflow: 'hidden' }}>
-                <p style={{ fontSize: '12px', fontWeight: 700, color: '#F8FAFC', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{userProfile.name}</p>
-                <p style={{ fontSize: '9px', color: '#64748B', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{userProfile.role}</p>
+              <div style={{ animation: 'fade-in 0.2s ease-out' }}>
+                <h1 style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '-0.3px', color: 'var(--text-primary)' }}>SafeSyn AI</h1>
+                <p style={{ fontSize: '8px', color: 'var(--color-primary)', fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase' }}>Control Center</p>
               </div>
             )}
           </div>
           {!sidebarCollapsed && (
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <button 
-                onClick={toggleTheme}
-                style={{ padding: '6px', background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer' }}
-                title="Toggle UI Theme Mode"
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setSidebarCollapsed(true);
+              }}
+              style={{ 
+                background: 'rgba(255,255,255,0.05)', 
+                border: '1px solid var(--border-color)', 
+                borderRadius: '6px', 
+                color: 'var(--text-secondary)', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                width: '24px', 
+                height: '24px',
+                transition: 'all 0.2s'
+              }}
+              title="Collapse Sidebar"
+            >
+              <ChevronLeft size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Scrollable Control Panel Body */}
+        <div style={{ 
+          flexGrow: 1, 
+          overflowY: 'auto', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '12px', 
+          padding: sidebarCollapsed ? '12px 8px' : '16px 12px',
+          scrollbarWidth: 'none'
+        }} className="custom-sidebar-scroll">
+
+          {/* Navigation Menu */}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            {[
+              { id: 'dashboard', label: 'Dashboard Overview', icon: <Home size={18} /> },
+              { id: 'source', label: 'Source Patients', icon: <Database size={18} /> },
+              { id: 'synthesis', label: 'AI Synthesis', icon: <Cpu size={18} /> },
+              { id: 'analytics', label: 'Fidelity & Utility', icon: <BarChart3 size={18} /> },
+              { id: 'privacy', label: 'Regulatory Audit', icon: <ShieldCheck size={18} /> },
+              { id: 'downloads', label: 'Secure Downloads', icon: <Download size={18} /> },
+              { id: 'settings', label: 'System Settings', icon: <Settings size={18} /> }
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
+                style={{
+                  color: activeTab === item.id ? '#FFF' : 'var(--text-secondary)'
+                }}
               >
-                {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                <span style={{ display: 'flex', shrink: 0 }}>{item.icon}</span>
+                {!sidebarCollapsed && <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.label}</span>}
               </button>
-              <button 
-                onClick={() => setInConsole(false)}
-                style={{ padding: '6px', background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer' }}
-                title="Back to Landing Page"
-              >
-                <Home size={15} />
-              </button>
+            ))}
+          </nav>
+
+          {/* Real-time control panels (Only visible when expanded) */}
+          {!sidebarCollapsed ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', animation: 'fade-in 0.3s ease-out' }}>
+              
+              {/* Accordion 1: Privacy & Pipeline */}
+              {renderAccordionHeader('Privacy & Audit', <ShieldCheck size={13} />, auditOpen, () => setAuditOpen(!auditOpen))}
+              {auditOpen && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', animation: 'fade-in 0.2s', padding: '2px 4px 6px 4px' }}>
+                  
+                  {/* Privacy Risk & Compliance badges */}
+                  <div className="glass-panel" style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Privacy Risk</span>
+                      <span style={{ 
+                        fontSize: '9px', 
+                        fontWeight: 800, 
+                        padding: '2px 8px', 
+                        borderRadius: '4px',
+                        backgroundColor: stats.riskLevel === 'Low' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        color: stats.riskLevel === 'Low' ? '#10B981' : '#EF4444',
+                        border: stats.riskLevel === 'Low' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+                        boxShadow: stats.riskLevel === 'Low' ? '0 0 8px rgba(16, 185, 129, 0.2)' : '0 0 8px rgba(239, 68, 68, 0.2)'
+                      }}>
+                        {stats.riskLevel === 'Low' ? 'SECURED DATA' : 'HIGH RISK'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                      {['HIPAA', 'GDPR', 'NIST-188'].map(badge => (
+                        <span key={badge} style={{ fontSize: '8px', fontWeight: 700, backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', padding: '1.5px 5px', borderRadius: '3px' }}>
+                          {badge}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Workflow Progress Tracker */}
+                  <div className="glass-panel" style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Workflow Status</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', paddingLeft: '14px' }}>
+                      <div style={{ position: 'absolute', left: '4px', top: '4px', bottom: '4px', width: '1px', backgroundColor: 'var(--border-color)' }}></div>
+                      {[
+                        { label: 'Patient Ingestion', done: patients.length > 0 },
+                        { label: 'PII Scan Audit', done: patients.length > 0 },
+                        { label: 'AI Synthesis', done: activeDataset.isSecured },
+                        { label: 'Secure Export', done: activeDataset.isSecured && stats.riskLevel === 'Low' }
+                      ].map((step, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+                          <div style={{ 
+                            position: 'absolute', 
+                            left: '-14px', 
+                            width: '9px', 
+                            height: '9px', 
+                            borderRadius: '50%', 
+                            backgroundColor: step.done ? 'var(--color-primary)' : 'var(--border-color)',
+                            border: step.done ? '2px solid #FFF' : '1px solid var(--text-muted)',
+                            boxShadow: step.done ? '0 0 6px var(--color-primary)' : 'none'
+                          }}></div>
+                          <span style={{ 
+                            fontSize: '11px', 
+                            fontWeight: step.done ? 600 : 500, 
+                            color: step.done ? 'var(--text-primary)' : 'var(--text-muted)' 
+                          }}>
+                            {step.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Dataset Health Metrics */}
+                  <div className="glass-panel" style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Dataset Health</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Records:</span>
+                        <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{patients.length.toLocaleString()}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>PII Alarms:</span>
+                        <span style={{ fontWeight: 700, color: piiLogs.length > 0 ? '#EF4444' : '#10B981' }}>{piiLogs.length}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Fidelity Rate:</span>
+                        <span style={{ fontWeight: 700, color: 'var(--color-accent)' }}>{activeDataset.isSecured ? '94.2%' : 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* Accordion 2: Engine & Actions */}
+              {renderAccordionHeader('Engine & Actions', <Cpu size={13} />, monitorsOpen, () => setMonitorsOpen(!monitorsOpen))}
+              {monitorsOpen && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', animation: 'fade-in 0.2s', padding: '2px 4px 6px 4px' }}>
+                  
+                  {/* AI Copilot & System Health Status */}
+                  <div className="glass-panel" style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ position: 'relative', display: 'flex' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', boxShadow: '0 0 8px #10B981' }}></div>
+                        <span style={{ position: 'absolute', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulse-glow 1.5s infinite', opacity: 0.7 }}></span>
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)' }}>SafeSyn Bot Online</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '9px', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '6px' }}>
+                      <div>Health: <span style={{ color: '#10B981', fontWeight: 700 }}>98%</span></div>
+                      <div>Ping: <span style={{ color: '#06B6D4', fontWeight: 700 }}>14ms</span></div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions Panel */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                      <button 
+                        onClick={() => {
+                          if (activeDataset.isSecured) {
+                            addToast('Dataset is already synthesized!', 'info');
+                          } else {
+                            setActiveTab('synthesis');
+                            addToast('Navigating to AI Synthesizer...', 'info');
+                          }
+                        }}
+                        style={{
+                          padding: '6px',
+                          borderRadius: '6px',
+                          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                          border: '1px solid rgba(37, 99, 235, 0.2)',
+                          color: 'var(--color-primary)',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Cpu size={11} /> Synthesize
+                      </button>
+
+                      <button 
+                        onClick={() => {
+                          const chatbotToggler = document.querySelector('[title="Toggle Chatbot"]');
+                          if (chatbotToggler) {
+                            chatbotToggler.click();
+                          } else {
+                            addToast('Starting AI Copilot consultation...', 'info');
+                          }
+                        }}
+                        style={{
+                          padding: '6px',
+                          borderRadius: '6px',
+                          backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                          border: '1px solid rgba(124, 58, 237, 0.2)',
+                          color: 'var(--color-secondary)',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Sparkles size={11} /> Ask Copilot
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* Accordion 3: Alerts & Session */}
+              {renderAccordionHeader('Alerts & Session', <Activity size={13} />, actionsOpen, () => setActionsOpen(!actionsOpen))}
+              {actionsOpen && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', animation: 'fade-in 0.2s', padding: '2px 4px 6px 4px' }}>
+                  
+                  {/* Notification Center */}
+                  <div className="glass-panel" style={{ padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Recent System Alerts</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '72px', overflowY: 'auto', fontSize: '9.5px', scrollbarWidth: 'none' }}>
+                      {activityLogs.slice(0, 2).map((log, idx) => (
+                        <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingBottom: '4px', borderBottom: idx === 0 ? '1px solid var(--border-color)' : 'none' }}>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{log.text}</span>
+                          <span style={{ color: 'var(--text-muted)' }}>{log.time}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Storage Allocation Indicator */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', fontWeight: 700 }}>
+                      <span style={{ color: 'var(--text-muted)' }}>DATABASE CACHE</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>2.4 GB / 10 GB</span>
+                    </div>
+                    <div style={{ width: '100%', height: '5px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ width: '24%', height: '100%', backgroundColor: 'var(--color-primary)', borderRadius: '3px' }}></div>
+                    </div>
+                  </div>
+
+                  {/* Research Session Details */}
+                  <div style={{ padding: '10px', borderRadius: '8px', backgroundColor: 'rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', fontSize: '9.5px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div><span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Session Code:</span> SS-9240-SEC</div>
+                    <div><span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Auth Role:</span> Investigator / PI</div>
+                  </div>
+
+                </div>
+              )}
+
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', marginTop: '10px' }}>
+              <div 
+                style={{ 
+                  width: '10px', 
+                  height: '10px', 
+                  borderRadius: '50%', 
+                  backgroundColor: stats.riskLevel === 'Low' ? '#10B981' : '#EF4444',
+                  boxShadow: stats.riskLevel === 'Low' ? '0 0 8px #10B981' : '0 0 8px #EF4444'
+                }}
+                title={`Risk level: ${stats.riskLevel}`}
+              ></div>
+
+              <div 
+                style={{ 
+                  width: '10px', 
+                  height: '10px', 
+                  borderRadius: '50%', 
+                  backgroundColor: '#10B981',
+                  boxShadow: '0 0 8px #10B981'
+                }}
+                title="SafeSyn Copilot Online"
+              ></div>
+            </div>
+          )}
+
+        </div>
+
+        {/* Sidebar Profile & Settings Footer */}
+        <div style={{ 
+          padding: sidebarCollapsed ? '12px 0' : '16px', 
+          borderTop: '1px solid var(--border-color)', 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          gap: '8px',
+          backgroundColor: 'rgba(0, 0, 0, 0.15)' 
+        }}>
+          {sidebarCollapsed ? (
+            <button 
+              onClick={() => setActiveTab('settings')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="Researcher Profile & Settings"
+            >
+              <div style={{ 
+                width: '32px', 
+                height: '32px', 
+                borderRadius: '50%', 
+                backgroundColor: 'rgba(124, 58, 237, 0.2)', 
+                border: '1px solid var(--color-secondary)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                color: 'var(--text-primary)', 
+                fontWeight: 800, 
+                fontSize: '12px'
+              }}>
+                {userProfile.avatar}
+              </div>
+            </button>
+          ) : (
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%', 
+                  backgroundColor: 'rgba(124, 58, 237, 0.2)', 
+                  border: '1px solid var(--color-secondary)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  color: 'var(--text-primary)', 
+                  fontWeight: 800, 
+                  fontSize: '12px', 
+                  flexShrink: 0 
+                }}>
+                  {userProfile.avatar}
+                </div>
+                <div style={{ overflow: 'hidden' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{userProfile.name}</p>
+                  <p style={{ fontSize: '9px', color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{userProfile.role}</p>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  onClick={toggleTheme}
+                  style={{ padding: '6px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  title="Toggle Theme"
+                >
+                  {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                </button>
+                <button 
+                  onClick={() => setInConsole(false)}
+                  style={{ padding: '6px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  title="Exit Console"
+                >
+                  <Home size={15} />
+                </button>
+              </div>
             </div>
           )}
         </div>
+
+        {/* System Info Footer block */}
+        {!sidebarCollapsed && (
+          <div style={{ 
+            padding: '8px 16px 12px 16px', 
+            fontSize: '8px', 
+            color: 'var(--text-muted)', 
+            textAlign: 'center', 
+            borderTop: '1px solid rgba(255,255,255,0.02)',
+            background: 'rgba(0,0,0,0.2)'
+          }}>
+            <span>SafeSyn AI Enterprise Console v2.0.1</span>
+            <div style={{ marginTop: '2px' }}>
+              <a href="#" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>Security Documentation</a>
+            </div>
+          </div>
+        )}
 
       </aside>
 

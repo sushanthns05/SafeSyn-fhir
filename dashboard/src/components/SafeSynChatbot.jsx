@@ -4,6 +4,203 @@ import {
   Copy, Check, Info, ShieldAlert, CheckCircle2 
 } from 'lucide-react';
 
+// Custom helper to parse and render Markdown styling dynamically inside chatbot bubbles
+const renderFormattedText = (text) => {
+  if (!text) return null;
+
+  const lines = text.split('\n');
+  const renderedElements = [];
+
+  const parseInline = (str) => {
+    const parts = [];
+    let currentIdx = 0;
+    
+    // Match bold **text**, inline code `code`, or italic *text*
+    const regex = /(\*\*.*?\*\*|`.*?`|\*.*?\*)/g;
+    let match;
+
+    while ((match = regex.exec(str)) !== null) {
+      const matchText = match[0];
+      const matchIndex = match.index;
+
+      if (matchIndex > currentIdx) {
+        parts.push(str.substring(currentIdx, matchIndex));
+      }
+
+      if (matchText.startsWith('**') && matchText.endsWith('**')) {
+        const content = matchText.slice(2, -2);
+        parts.push(
+          <strong key={matchIndex} style={{ color: 'var(--text-primary)', fontWeight: 800 }}>
+            {content}
+          </strong>
+        );
+      } else if (matchText.startsWith('`') && matchText.endsWith('`')) {
+        const content = matchText.slice(1, -1);
+        parts.push(
+          <code 
+            key={matchIndex} 
+            style={{ 
+              fontFamily: 'monospace', 
+              backgroundColor: 'rgba(255, 255, 255, 0.08)', 
+              padding: '2px 6px', 
+              borderRadius: '4px', 
+              color: 'var(--color-secondary)',
+              fontSize: '11px',
+              border: '1px solid var(--border-color)',
+              wordBreak: 'break-all'
+            }}
+          >
+            {content}
+          </code>
+        );
+      } else if (matchText.startsWith('*') && matchText.endsWith('*')) {
+        const content = matchText.slice(1, -1);
+        parts.push(
+          <em key={matchIndex} style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+            {content}
+          </em>
+        );
+      }
+      currentIdx = regex.lastIndex;
+    }
+
+    if (currentIdx < str.length) {
+      parts.push(str.substring(currentIdx));
+    }
+
+    return parts.length > 0 ? parts : str;
+  };
+
+  let listBuffer = [];
+  let isInCodeBlock = false;
+  let codeBlockLines = [];
+
+  const flushListBuffer = (key) => {
+    if (listBuffer.length === 0) return null;
+    const items = [...listBuffer];
+    listBuffer = [];
+    return (
+      <div key={key} style={{ margin: '6px 0', display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
+        {items.map((item, idx) => (
+          <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.45' }}>
+            <span style={{ color: 'var(--color-secondary)', marginTop: '4px', fontSize: '12px', flexShrink: 0 }}>•</span>
+            <div style={{ flexGrow: 1 }}>{item}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith('```')) {
+      if (isInCodeBlock) {
+        // End code block
+        const codeText = codeBlockLines.join('\n');
+        renderedElements.push(
+          <pre 
+            key={`code-block-${i}`} 
+            style={{ 
+              backgroundColor: 'rgba(9, 13, 26, 0.95)', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              overflowX: 'auto', 
+              fontFamily: 'monospace', 
+              fontSize: '11px',
+              color: '#38BDF8',
+              border: '1px solid var(--border-color)',
+              margin: '8px 0',
+              lineHeight: '1.4'
+            }}
+          >
+            <code>{codeText}</code>
+          </pre>
+        );
+        codeBlockLines = [];
+        isInCodeBlock = false;
+      } else {
+        // Start code block
+        const listEl = flushListBuffer(`list-before-code-${i}`);
+        if (listEl) renderedElements.push(listEl);
+        
+        isInCodeBlock = true;
+      }
+      continue;
+    }
+
+    if (isInCodeBlock) {
+      codeBlockLines.push(line);
+      continue;
+    }
+
+    if (trimmed.startsWith('### ')) {
+      const listEl = flushListBuffer(`list-before-h3-${i}`);
+      if (listEl) renderedElements.push(listEl);
+
+      renderedElements.push(
+        <h4 key={`h3-${i}`} style={{ fontSize: '13.5px', fontWeight: 800, marginTop: '12px', marginBottom: '6px', color: 'var(--color-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '2px' }}>
+          {parseInline(trimmed.substring(4))}
+        </h4>
+      );
+      continue;
+    }
+    
+    if (trimmed.startsWith('## ')) {
+      const listEl = flushListBuffer(`list-before-h2-${i}`);
+      if (listEl) renderedElements.push(listEl);
+
+      renderedElements.push(
+        <h3 key={`h2-${i}`} style={{ fontSize: '14.5px', fontWeight: 800, marginTop: '16px', marginBottom: '8px', color: '#FFF' }}>
+          {parseInline(trimmed.substring(3))}
+        </h3>
+      );
+      continue;
+    }
+
+    if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+      const content = trimmed.substring(2);
+      const boldPrefixMatch = content.match(/^\*\*(.*?):\*\*(.*)/);
+      
+      if (boldPrefixMatch) {
+        const keyText = boldPrefixMatch[1];
+        const valText = boldPrefixMatch[2];
+        listBuffer.push(
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{keyText}:</span>
+            <span>{parseInline(valText)}</span>
+          </div>
+        );
+      } else {
+        listBuffer.push(parseInline(content));
+      }
+      continue;
+    }
+
+    if (trimmed === '') {
+      const listEl = flushListBuffer(`list-empty-${i}`);
+      if (listEl) renderedElements.push(listEl);
+      renderedElements.push(<div key={`br-${i}`} style={{ height: '6px' }} />);
+      continue;
+    }
+
+    const listEl = flushListBuffer(`list-before-p-${i}`);
+    if (listEl) renderedElements.push(listEl);
+    
+    renderedElements.push(
+      <p key={`p-${i}`} style={{ fontSize: '13px', lineHeight: '1.45', margin: '4px 0', color: 'var(--text-secondary)' }}>
+        {parseInline(line)}
+      </p>
+    );
+  }
+
+  const finalList = flushListBuffer(`list-final`);
+  if (finalList) renderedElements.push(finalList);
+
+  return <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>{renderedElements}</div>;
+};
+
 export default function SafeSynChatbot({ stats, activeDataset, patients, piiLogs, triggeredMessage }) {
   const [isOpen, setIsOpen] = useState(false);
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
@@ -241,8 +438,8 @@ Current Dashboard Context:
           <div className="chatbot-messages" style={{ flexGrow: 1, overflowY: 'auto' }}>
             {messages.map((msg, index) => (
               <div key={index} className={`chat-bubble chat-bubble-${msg.sender}`} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <div style={{ whiteSpace: 'pre-wrap' }}>
-                  {msg.text}
+                <div style={{ wordBreak: 'break-word' }}>
+                  {renderFormattedText(msg.text)}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', opacity: 0.6, marginTop: '4px' }}>
                   <span>{msg.timestamp}</span>

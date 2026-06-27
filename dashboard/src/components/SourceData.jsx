@@ -126,7 +126,7 @@ export default function SourceData({
         
         {/* PII Leakage Risk Gauge */}
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--border-color)" strokeWidth="8"/>
               <circle 
@@ -139,7 +139,18 @@ export default function SourceData({
                 style={{ transition: 'stroke-dashoffset 1s ease-out' }}
               />
             </svg>
-            <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              textAlign: 'center'
+            }}>
               <span style={{ fontSize: '16px', fontWeight: 800, color: isSecured ? 'var(--color-success)' : 'var(--color-danger)' }}>
                 {leakageRisk}%
               </span>
@@ -158,7 +169,7 @@ export default function SourceData({
 
         {/* Data Quality Score Gauge */}
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--border-color)" strokeWidth="8"/>
               <circle 
@@ -170,7 +181,18 @@ export default function SourceData({
                 strokeLinecap="round"
               />
             </svg>
-            <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              textAlign: 'center'
+            }}>
               <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-primary)' }}>{qualityScore}%</span>
               <span style={{ fontSize: '7px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Quality</span>
             </div>
