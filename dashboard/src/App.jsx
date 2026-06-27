@@ -14,6 +14,7 @@ import Analytics from './components/Analytics';
 import PrivacyAudit from './components/PrivacyAudit';
 import Downloads from './components/Downloads';
 import SafeSynChatbot from './components/SafeSynChatbot';
+import DashboardOverview from './components/DashboardOverview';
 
 // Import parser & data
 import { parseFhirBundle, parseCsvText } from './utils/fhirParser';
@@ -281,118 +282,14 @@ export default function App() {
   // Render Dashboard Overview Page
   const renderDashboardOverview = () => {
     return (
-      <div style={{ animation: 'slide-in 0.4s ease-out', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-        {/* Banner greeting */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>SYSTEM MONITOR // REAL-TIME CONSOLE</span>
-            <h2 style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.5px', marginTop: '4px' }}>Welcome Back, {userProfile.name}</h2>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>SafeSyn AI platform is active. Model parameters are locked and ready for ingestion.</p>
-          </div>
-          <button className="btn-primary" onClick={() => setActiveTab('synthesis')}>
-            🚀 Launch AI Synthesis
-          </button>
-        </div>
-
-        {/* Metric Cards Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px' }}>
-          <div className="glass-panel metric-card">
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ingested Patient Set</span>
-            <span className="metric-value" style={{ color: 'var(--color-primary)' }}>{stats.totalRecords.toLocaleString()} Rows</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '12px' }}>Active CSV: {activeDataset.name}</span>
-          </div>
-
-          <div className="glass-panel metric-card">
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Differential Privacy</span>
-            <span className="metric-value" style={{ color: 'var(--color-secondary)' }}>ε = 4.5</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '12px' }}>Calibrated Laplace Noise</span>
-          </div>
-
-          <div className="glass-panel metric-card">
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>EHR Cohort Fidelity</span>
-            <span className="metric-value" style={{ color: 'var(--color-accent)' }}>94.2% Match</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '12px' }}>Downstream model retention target</span>
-          </div>
-
-          <div className="glass-panel metric-card">
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Empirical Leakage Shield</span>
-            <div style={{ marginTop: '8px' }}>
-              {stats.riskLevel === 'High' ? (
-                <span className="badge badge-red" style={{ animation: 'pulse-glow 1.5s infinite' }}>Raw Vulnerable Data</span>
-              ) : (
-                <span className="badge badge-green">0.00% Leakage Pass</span>
-              )}
-            </div>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '12px' }}>Membership inference scanning</span>
-          </div>
-        </div>
-
-        {/* Split grid: Model configuration showcase & System log activity */}
-        <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '24px' }}>
-          
-          {/* Column 1: Model parameters card */}
-          <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700 }}>Privacy-Preserving Engine State</h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Status overview of the current generative neural networks and adaptors.</p>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div style={{ padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)' }}>Gemma-2-2B Fine-Tuned</span>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Fine-tuned using low-rank adaptors (LoRA) for clinical JSON schemas.</p>
-                <span className="badge badge-cyan" style={{ fontSize: '9px', alignSelf: 'flex-start', marginTop: '6px' }}>Active Target</span>
-              </div>
-              <div style={{ padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-secondary)' }}>CTGAN Tabular Checker</span>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Generative network built for structural correlations.</p>
-                <span className="badge badge-cyan" style={{ fontSize: '9px', alignSelf: 'flex-start', marginTop: '6px' }}>Standby</span>
-              </div>
-            </div>
-
-            <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(37, 99, 235, 0.02)', border: '1px dashed var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>Quick System Actions</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
-                <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setActiveTab('source')}>
-                  Scan PII Leaks
-                </button>
-                <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setActiveTab('analytics')}>
-                  Compare Margins
-                </button>
-                <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setActiveTab('downloads')}>
-                  Export FHIR files
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Column 2: Activity logs */}
-          <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Activity style={{ color: 'var(--color-secondary)' }} size={18} />
-                Real-Time Event Stream
-              </h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Chronological history of active research runs and synthesis jobs.</p>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
-              {activityLogs.map((log) => (
-                <div key={log.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                  <div style={{ marginTop: '4px', flexShrink: 0 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-secondary)' }} />
-                  </div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: 'var(--text-primary)', fontWeight: 500 }}>{log.text}</p>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginTop: '2px' }}>{log.time}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </div>
+      <DashboardOverview 
+        userProfile={userProfile}
+        stats={stats}
+        activeDataset={activeDataset}
+        activityLogs={activityLogs}
+        setActiveTab={setActiveTab}
+        triggerChatbot={triggerChatbot}
+      />
     );
   };
 
