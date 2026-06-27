@@ -286,7 +286,7 @@ export default function App() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>SYSTEM MONITOR // REAL-TIME CONSOLE</span>
-            <h2 style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.5px', marginTop: '4px' }}>Welcome Back, {userProfile.name.split(' ')[0]}</h2>
+            <h2 style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.5px', marginTop: '4px' }}>Welcome Back, {userProfile.name}</h2>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>SafeSyn AI platform is active. Model parameters are locked and ready for ingestion.</p>
           </div>
           <button className="btn-primary" onClick={() => setActiveTab('synthesis')}>
