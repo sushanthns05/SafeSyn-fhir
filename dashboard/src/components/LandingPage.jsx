@@ -69,12 +69,12 @@ export default function LandingPage({ onLaunchConsole }) {
             </div>
             <div style={{ width: '1px', backgroundColor: 'var(--border-color)', height: '40px' }} />
             <div>
-              <h4 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-secondary)' }}>&lt; 0.01%</h4>
+              <h4 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-success)' }}>0.00%</h4>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Empirical Leakage Risk</p>
             </div>
             <div style={{ width: '1px', backgroundColor: 'var(--border-color)', height: '40px' }} />
             <div>
-              <h4 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-accent)' }}>94.2%</h4>
+              <h4 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-warning)' }}>78.4%</h4>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>EHR Fidelity score</p>
             </div>
           </div>

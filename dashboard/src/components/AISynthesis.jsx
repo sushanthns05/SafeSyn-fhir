@@ -119,7 +119,7 @@ export default function AISynthesis({
         clearInterval(trainingTimer.current);
         setTrainingProgress(100);
         setCurrentEpoch(maxEpochs);
-        setCurrentValScore(0.942);
+        setCurrentValScore(0.784);
         setIsTraining(false);
         setTrainingComplete(true);
         setGpuLoad(0);
@@ -141,7 +141,7 @@ export default function AISynthesis({
         const nextDiscLoss = Math.max(0.18, startDiscLoss * Math.exp(-decayRate * 0.4 * currentEp) + noiseDisc);
         
         setCurrentLoss({ gen: nextGenLoss, disc: nextDiscLoss });
-        setCurrentValScore(parseFloat((0.32 + (0.942 - 0.32) * (1 - Math.exp(-0.06 * currentEp))).toFixed(3)));
+        setCurrentValScore(parseFloat((0.32 + (0.784 - 0.32) * (1 - Math.exp(-0.06 * currentEp))).toFixed(3)));
 
         setEpochsList(prev => [...prev, currentEp]);
         setGenLossList(prev => [...prev, nextGenLoss]);
@@ -457,7 +457,7 @@ export default function AISynthesis({
 
                 {trainingComplete && !isTraining && (
                   <div style={{ fontSize: '11px', color: 'var(--color-success)', fontWeight: 700 }}>
-                    ✓ Generative cohort fully synthesized ({syntheticRows.toLocaleString()} patients) at 94.2% fidelity.
+                    ✓ Generative cohort fully synthesized ({syntheticRows.toLocaleString()} patients) at 78.4% fidelity.
                   </div>
                 )}
               </div>
@@ -600,13 +600,13 @@ export default function AISynthesis({
             <tbody>
               <tr style={{ background: selectedModel === 'gemma' ? 'rgba(124, 58, 237, 0.05)' : 'none' }}>
                 <td style={{ fontWeight: 700 }}>Gemma-2-2B LoRA</td>
-                <td style={{ color: 'var(--color-success)' }}>94.2%</td>
+                <td style={{ color: 'var(--color-warning)' }}>78.4%</td>
                 <td style={{ color: 'var(--color-success)' }}>ε = 4.5</td>
                 <td>142 tok/s</td>
               </tr>
               <tr style={{ background: selectedModel === 'ctgan' ? 'rgba(37, 99, 235, 0.05)' : 'none' }}>
                 <td style={{ fontWeight: 700 }}>CTGAN Baseline</td>
-                <td style={{ color: 'var(--color-success)' }}>96.8%</td>
+                <td style={{ color: 'var(--color-warning)' }}>81.2%</td>
                 <td style={{ color: 'var(--color-success)' }}>ε = 4.5</td>
                 <td>1,200 r/s</td>
               </tr>
@@ -628,7 +628,7 @@ export default function AISynthesis({
         <div>
           <h4 style={{ fontSize: '14px', fontWeight: 800 }}>AI Advisor Recommendation</h4>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.4 }}>
-            For high-fidelity medical research cohorts, **Gemma-2-2B fine-tuned** matches sequence patterns (like chronic disease progressions) with 94.2% correctness. If speed and simple demographic ratios are preferred, select **CTGAN** to generate 1,200 patient rows per second.
+            For privacy-prioritized medical research cohorts, **Gemma-2-2B fine-tuned** matches sequence patterns (like chronic disease progressions) with 78.4% fidelity while ensuring 0% re-identification risk. If speed and simple demographic ratios are preferred, select **CTGAN** to generate 1,200 patient rows per second at 81.2% correlation retention.
           </p>
         </div>
       </div>

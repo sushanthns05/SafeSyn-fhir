@@ -60,7 +60,7 @@ export default function DashboardOverview({
       },
       {
         label: 'Synthetic Patients (%)',
-        data: isSecured ? [14.8, 10.5, 48.9, 20.3, 5.5] : [0, 0, 0, 0, 0],
+        data: isSecured ? [18.5, 12.8, 42.3, 17.1, 9.3] : [0, 0, 0, 0, 0],
         backgroundColor: 'rgba(124, 58, 237, 0.65)',
         borderColor: '#7C3AED',
         borderWidth: 1,
@@ -82,7 +82,7 @@ export default function DashboardOverview({
       },
       {
         label: 'Synthetic Encounters (Avg)',
-        data: isSecured ? [118, 148, 185, 215, 202, 255, 305, 335] : [0, 0, 0, 0, 0, 0, 0, 0],
+        data: isSecured ? [105, 132, 155, 190, 175, 220, 265, 290] : [0, 0, 0, 0, 0, 0, 0, 0],
         borderColor: '#7C3AED',
         backgroundColor: 'rgba(124, 58, 237, 0.05)',
         fill: true,
@@ -107,7 +107,7 @@ export default function DashboardOverview({
     labels: ['Female', 'Male'],
     datasets: [
       {
-        data: isSecured ? [50.8, 49.2] : [0, 0],
+        data: isSecured ? [55.6, 44.4] : [0, 0],
         backgroundColor: ['rgba(124, 58, 237, 0.7)', 'rgba(168, 85, 247, 0.7)'],
         borderColor: ['#7C3AED', '#A855F7'],
         borderWidth: 1
@@ -159,7 +159,7 @@ export default function DashboardOverview({
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--gradient-glow)', border: '1px solid var(--glass-border)', padding: '4px 10px', borderRadius: '99px' }}>
               <span className="pulsing-indicator-dot active" />
               <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                AI Synthesizer: {isSecured ? 'Optimal (98.6% Fidelity)' : 'Awaiting Synthesis Run'}
+                AI Synthesizer: {isSecured ? 'Optimal (78.4% Fidelity)' : 'Awaiting Synthesis Run'}
               </span>
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function DashboardOverview({
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Fidelity Index:</span>
-                <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>94.2%</span>
+                <span style={{ fontWeight: 700, color: 'var(--color-warning)' }}>78.4%</span>
               </div>
             </div>
           </div>
@@ -372,7 +372,7 @@ export default function DashboardOverview({
             <Sparkles size={16} style={{ color: 'var(--color-accent)' }} />
           </div>
           <span className="metric-value" style={{ color: 'var(--color-accent)' }}>
-            94.2% Match
+            78.4% Match
           </span>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
             Downstream model retention target
@@ -528,11 +528,11 @@ export default function DashboardOverview({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '10px', marginTop: '4px' }}>
                 <div>
                   <span style={{ color: 'var(--text-muted)' }}>Wasserstein D:</span>
-                  <span style={{ fontWeight: 700, display: 'block', color: 'var(--text-primary)' }}>0.024</span>
+                  <span style={{ fontWeight: 700, display: 'block', color: 'var(--color-warning)' }}>0.087</span>
                 </div>
                 <div>
                   <span style={{ color: 'var(--text-muted)' }}>Corr Similarity:</span>
-                  <span style={{ fontWeight: 700, display: 'block', color: 'var(--text-primary)' }}>96.8%</span>
+                  <span style={{ fontWeight: 700, display: 'block', color: 'var(--color-warning)' }}>81.2%</span>
                 </div>
               </div>
             </div>

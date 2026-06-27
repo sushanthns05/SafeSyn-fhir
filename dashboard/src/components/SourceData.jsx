@@ -451,7 +451,7 @@ export default function SourceData({
 
             <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px' }}>
               <span style={{ fontWeight: 700, color: 'var(--color-primary)', display: 'block', marginBottom: '4px' }}>💡 Model Suggestion</span>
-              CTGAN checker shows high statistical cross-correlation similarity (96.8%) for demographic patterns when utilizing 5,000+ epochs.
+              CTGAN checker shows moderate-high statistical cross-correlation similarity (81.2%) for demographic patterns when utilizing 5,000+ epochs.
             </div>
           </div>
         </div>

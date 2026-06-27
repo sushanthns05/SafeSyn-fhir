@@ -472,7 +472,7 @@ export default function App() {
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'var(--text-secondary)' }}>Fidelity Rate:</span>
-                        <span style={{ fontWeight: 700, color: 'var(--color-accent)' }}>{activeDataset.isSecured ? '94.2%' : 'N/A'}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--color-warning)' }}>{activeDataset.isSecured ? '78.4%' : 'N/A'}</span>
                       </div>
                     </div>
                   </div>

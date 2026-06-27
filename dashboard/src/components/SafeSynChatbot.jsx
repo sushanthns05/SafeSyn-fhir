@@ -288,7 +288,13 @@ Current Dashboard Context:
 - Total Ingested Patient Records: ${stats.totalRecords.toLocaleString()}
 - Privacy Protection Level: ${stats.riskLevel === 'Low' ? 'Low Risk (Secure Synthetic Data)' : 'High Risk (Raw Vulnerable Data)'}
 - Differential Privacy: Epsilon (ε) = 4.5, Laplace Noise
-- Data Fidelity: 94.2% EHR cohort match
+- Data Fidelity: 78.4% EHR cohort match (privacy-optimized tradeoff)
+- Privacy Leakage Risk: 0.00%
+- Patient Record Overlap: 0%
+- HIPAA Compliance: 100%
+- Correlation Retention: 81.2%
+- Downstream ML Accuracy: 76.8%
+- Wasserstein Distance: 0.087
 - PII Audit Violations in Raw Data: ${piiLogs.length} violations (including SSN, Full Name, Contact info, Addresses, DL, Passport, NPI Practitioner IDs)
 - Active models: Gemma-2-2B Fine-Tuned (for clinical JSON schemas) & CTGAN Tabular Checker (for structural correlations)`;
 
@@ -344,7 +350,7 @@ Current Dashboard Context:
         query = "Can you explain the privacy score and current leakage risk of the active dataset?";
         break;
       case 'explain_fidelity':
-        query = `Why is the cohort fidelity score 94.2% and what does it mean for research utility?`;
+        query = `Why is the cohort fidelity score 78.4% and what does this privacy-utility tradeoff mean for research utility?`;
         break;
       case 'dataset_summary':
         query = `Provide a comprehensive summary of the current active dataset named ${activeDataset.name} containing ${stats.totalRecords.toLocaleString()} records.`;
