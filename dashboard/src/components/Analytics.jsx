@@ -22,7 +22,7 @@ ChartJS.register(
   Legend
 );
 
-export default function Analytics() {
+export default function Analytics({ onExplain }) {
   const [activeChartTab, setActiveChartTab] = useState('age'); // age, gender, race
 
   // Statistical calculations derived from 5001 raw records vs CTGAN output
@@ -262,28 +262,43 @@ export default function Analytics() {
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Validate marginal density equivalence (Real vs. Anonymized).</p>
           </div>
-          {/* Chart selector tabs */}
-          <div style={{ display: 'flex', backgroundColor: 'var(--bg-primary)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+          {/* Chart selector tabs & Ask AI button */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', backgroundColor: 'var(--bg-primary)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <button 
+                className="btn-secondary"
+                style={{ fontSize: '12px', padding: '6px 12px', border: 'none', background: activeChartTab === 'age' ? 'var(--gradient-primary)' : 'transparent', color: activeChartTab === 'age' ? '#fff' : 'var(--text-secondary)' }}
+                onClick={() => setActiveChartTab('age')}
+              >
+                Age Histogram
+              </button>
+              <button 
+                className="btn-secondary"
+                style={{ fontSize: '12px', padding: '6px 12px', border: 'none', background: activeChartTab === 'gender' ? 'var(--gradient-primary)' : 'transparent', color: activeChartTab === 'gender' ? '#fff' : 'var(--text-secondary)' }}
+                onClick={() => setActiveChartTab('gender')}
+              >
+                Gender Doughnut
+              </button>
+              <button 
+                className="btn-secondary"
+                style={{ fontSize: '12px', padding: '6px 12px', border: 'none', background: activeChartTab === 'race' ? 'var(--gradient-primary)' : 'transparent', color: activeChartTab === 'race' ? '#fff' : 'var(--text-secondary)' }}
+                onClick={() => setActiveChartTab('race')}
+              >
+                Race Distribution
+              </button>
+            </div>
+            
             <button 
               className="btn-secondary"
-              style={{ fontSize: '12px', padding: '6px 12px', border: 'none', background: activeChartTab === 'age' ? 'var(--gradient-primary)' : 'transparent', color: activeChartTab === 'age' ? '#fff' : 'var(--text-secondary)' }}
-              onClick={() => setActiveChartTab('age')}
+              style={{ fontSize: '12px', padding: '6px 12px', borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
+              onClick={() => {
+                if (onExplain) {
+                  let chartName = activeChartTab === 'age' ? 'Age Histogram' : activeChartTab === 'gender' ? 'Gender Distribution' : 'Race Distribution';
+                  onExplain(`Can you explain the statistical comparison shown in the ${chartName} chart?`);
+                }
+              }}
             >
-              Age Histogram
-            </button>
-            <button 
-              className="btn-secondary"
-              style={{ fontSize: '12px', padding: '6px 12px', border: 'none', background: activeChartTab === 'gender' ? 'var(--gradient-primary)' : 'transparent', color: activeChartTab === 'gender' ? '#fff' : 'var(--text-secondary)' }}
-              onClick={() => setActiveChartTab('gender')}
-            >
-              Gender Doughnut
-            </button>
-            <button 
-              className="btn-secondary"
-              style={{ fontSize: '12px', padding: '6px 12px', border: 'none', background: activeChartTab === 'race' ? 'var(--gradient-primary)' : 'transparent', color: activeChartTab === 'race' ? '#fff' : 'var(--text-secondary)' }}
-              onClick={() => setActiveChartTab('race')}
-            >
-              Race Distribution
+              💡 Ask AI to Explain Chart
             </button>
           </div>
         </div>
@@ -315,6 +330,25 @@ export default function Analytics() {
             <Bar data={raceData} options={barOptions} />
           )}
         </div>
+      </div>
+
+      {/* Heatmaps Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', marginTop: '8px', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <h3 style={{ fontSize: '18px', fontWeight: 700 }}>Feature Correlation Matrices</h3>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Verify relationship similarity between demographic variables.</p>
+        </div>
+        <button 
+          className="btn-secondary"
+          style={{ fontSize: '12px', padding: '6px 12px', borderColor: 'var(--color-secondary)', color: 'var(--color-secondary)' }}
+          onClick={() => {
+            if (onExplain) {
+              onExplain("Can you explain the Feature Correlation heatmaps comparing real and synthetic data distributions, including correlation similarity (96.8%)?");
+            }
+          }}
+        >
+          💡 Explain Correlation Parity
+        </button>
       </div>
 
       {/* Heatmaps */}
@@ -388,9 +422,22 @@ export default function Analytics() {
 
       {/* Utility metrics table */}
       <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div>
-          <h3 style={{ fontSize: '18px', fontWeight: 700 }}>Analytical Downstream Parity</h3>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Comparison of standard predictive model accuracy when trained on raw vs synthetic data.</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <h3 style={{ fontSize: '18px', fontWeight: 700 }}>Analytical Downstream Parity</h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Comparison of standard predictive model accuracy when trained on raw vs synthetic data.</p>
+          </div>
+          <button 
+            className="btn-secondary"
+            style={{ fontSize: '12px', padding: '6px 12px', borderColor: 'var(--color-accent)', color: 'var(--color-accent)' }}
+            onClick={() => {
+              if (onExplain) {
+                onExplain("Can you summarize the Analytical Downstream Parity table? What do the F1 scores and accuracy parity numbers tell us about the safety and research utility of the synthetic dataset?");
+              }
+            }}
+          >
+            💡 Explain Downstream Parity
+          </button>
         </div>
         
         <div className="table-container">

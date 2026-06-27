@@ -13,6 +13,7 @@ import AISynthesis from './components/AISynthesis';
 import Analytics from './components/Analytics';
 import PrivacyAudit from './components/PrivacyAudit';
 import Downloads from './components/Downloads';
+import SafeSynChatbot from './components/SafeSynChatbot';
 
 // Import parser & data
 import { parseFhirBundle, parseCsvText } from './utils/fhirParser';
@@ -32,6 +33,11 @@ const INITIAL_PII_LOGS = [
 
 export default function App() {
   const [inConsole, setInConsole] = useState(false);
+  const [triggeredMessage, setTriggeredMessage] = useState(null);
+
+  const triggerChatbot = (text) => {
+    setTriggeredMessage({ text, id: Date.now() });
+  };
   const [theme, setTheme] = useState('light'); // default light as requested
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -197,7 +203,7 @@ export default function App() {
       case 'synthesis':
         return <AISynthesis onSynthesisComplete={handleSynthesisComplete} isSecured={activeDataset.isSecured} />;
       case 'analytics':
-        return <Analytics />;
+        return <Analytics onExplain={triggerChatbot} />;
       case 'privacy':
         return <PrivacyAudit />;
       case 'downloads':
@@ -596,6 +602,13 @@ export default function App() {
         ))}
       </div>
 
+      <SafeSynChatbot 
+        stats={stats} 
+        activeDataset={activeDataset} 
+        patients={patients} 
+        piiLogs={piiLogs} 
+        triggeredMessage={triggeredMessage} 
+      />
     </div>
   );
 }
