@@ -12,7 +12,6 @@ import LandingPage from './components/LandingPage';
 import SourceData from './components/SourceData';
 import AISynthesis from './components/AISynthesis';
 import Analytics from './components/Analytics';
-import PrivacyAudit from './components/PrivacyAudit';
 import Downloads from './components/Downloads';
 import SafeSynChatbot from './components/SafeSynChatbot';
 import DashboardOverview from './components/DashboardOverview';
@@ -210,8 +209,6 @@ export default function App() {
         return <AISynthesis onSynthesisComplete={handleSynthesisComplete} isSecured={activeDataset.isSecured} />;
       case 'analytics':
         return <Analytics onExplain={triggerChatbot} />;
-      case 'privacy':
-        return <PrivacyAudit />;
       case 'downloads':
         return <Downloads patients={patients} stats={stats} onAddActivity={addActivity} />;
       case 'settings':
@@ -375,7 +372,6 @@ export default function App() {
               { id: 'source', label: 'Source Patients', icon: <Database size={18} /> },
               { id: 'synthesis', label: 'AI Synthesis', icon: <Cpu size={18} /> },
               { id: 'analytics', label: 'Fidelity & Utility', icon: <BarChart3 size={18} /> },
-              { id: 'privacy', label: 'Regulatory Audit', icon: <ShieldCheck size={18} /> },
               { id: 'downloads', label: 'Secure Downloads', icon: <Download size={18} /> },
               { id: 'settings', label: 'System Settings', icon: <Settings size={18} /> }
             ].map(item => (
