@@ -1,0 +1,11 @@
+====================================================
+LATEST EVALUATION RESULTS
+====================================================
+
+Column Shapes Score: 84.97%
+
+Column Pair Trends Score: 59.56%
+
+Overall Score (Average): 72.26%
+
+Overall Quality Score: 0.7176820357446757

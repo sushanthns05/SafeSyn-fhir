@@ -12,26 +12,15 @@ import LandingPage from './components/LandingPage';
 import SourceData from './components/SourceData';
 import AISynthesis from './components/AISynthesis';
 import Analytics from './components/Analytics';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import Downloads from './components/Downloads';
 import SafeSynChatbot from './components/SafeSynChatbot';
 import DashboardOverview from './components/DashboardOverview';
 import SystemSettings from './components/SystemSettings';
+import { DebugBoundary } from './components/DebugBoundary';
 
 // Import parser & data
-import { parseFhirBundle, parseCsvText } from './utils/fhirParser';
-import { ENTIRE_RAW_POPULATION } from './data/samplePatients';
-
-// Default initial PII audit log list representing raw records
-const INITIAL_PII_LOGS = [
-  { field: 'Social Security Number (SSN)', value: '999-53-9172', description: 'Direct government unique identifier, found in patient resource block.' },
-  { field: 'Full Patient Name', value: 'Mr. Darryl392 Rolf983 Jerde200', description: 'Direct identity identifier, violating HIPAA Safe Harbor rules.' },
-  { field: 'Contact Info (phone)', value: '555-500-4422', description: 'Direct communications address, high leakage risk.' },
-  { field: 'Physical Address', value: '551 Cruickshank Lock Apt 83, Bellingham, MA 02019', description: 'Geographic location detail, violating HIPAA de-identification criteria.' },
-  { field: "Mother's Maiden Name", value: 'Gale827 Rogahn59', description: 'High-security question answer, standard verification field.' },
-  { field: "Driver's License", value: 'S99920616', description: 'Direct state identifier.' },
-  { field: 'Passport Number', value: 'X17195018X', description: 'Federal travel identification key.' },
-  { field: 'Practitioner ID (NPI)', value: '9999945899', description: 'Care provider directory identifier (Dr. Stephen891 Okuneva707).' }
-];
+import { parseFhirBundle, parseCsvText, parseComparisonCsv, parseEvaluationText } from './utils/fhirParser';
 
 export default function App() {
   const [inConsole, setInConsole] = useState(false);
@@ -57,26 +46,31 @@ export default function App() {
 
   // Dataset states
   const [activeDataset, setActiveDataset] = useState({
-    name: 'synthetic_patient_dataset.csv',
-    size: '82 KB',
-    isSecured: false
+    name: 'synthetic_patients(1)(1).csv',
+    size: 'Loading...',
+    isSecured: true
   });
 
   const [stats, setStats] = useState({
-    totalRecords: 5001,
-    detectedFields: 3,
+    totalRecords: 0,
+    detectedFields: 0,
     missingValues: 0,
-    riskLevel: 'High'
+    riskLevel: 'Low'
   });
 
-  const [patients, setPatients] = useState(ENTIRE_RAW_POPULATION);
-  const [piiLogs, setPiiLogs] = useState(INITIAL_PII_LOGS);
+  const [patients, setPatients] = useState([]);
+  const [comparisonData, setComparisonData] = useState([]);
+  const [piiLogs, setPiiLogs] = useState([]);
+  const [evalStats, setEvalStats] = useState({
+    columnShapes: 84.97,
+    columnPairTrends: 59.56,
+    overallScore: 72.26,
+    qualityScore: 0.7177
+  });
 
   // Recent activity logs state
   const [activityLogs, setActivityLogs] = useState([
-    { id: 1, text: 'Engine initialized with CTGANSynthesizer model checkpoint', time: '10 mins ago' },
-    { id: 2, text: 'Raw patient dataset (5,001 records) loaded in memory', time: '8 mins ago' },
-    { id: 3, text: 'PII Audit scanner completed audit check (8 violations)', time: '7 mins ago' }
+    { id: 1, text: 'Statistical Synthetic Dataset Analysis Engine initialized', time: 'Just now' }
   ]);
 
   // Toast notifications state
@@ -99,6 +93,56 @@ export default function App() {
     ]);
   };
 
+  useEffect(() => {
+    // Dynamically fetch both CSVs on load
+    const loadDatasets = async () => {
+      try {
+        const patientsRes = await fetch('/synthetic_patients(1)(1).csv');
+        const patientsText = await patientsRes.text();
+        const parsedPatients = parseCsvText(patientsText);
+
+        const compRes = await fetch('/statistical_comparison.csv');
+        const compText = await compRes.text();
+        const parsedComp = parseComparisonCsv(compText);
+
+        try {
+          const evalRes = await fetch('/evaluation_results.txt');
+          const evalText = await evalRes.text();
+          const parsedEval = parseEvaluationText(evalText);
+          if (parsedEval) {
+            setEvalStats(parsedEval);
+          }
+        } catch (e) {
+          console.warn('Could not load evaluation_results.txt, using defaults', e);
+        }
+
+        setPatients(parsedPatients.records);
+        setComparisonData(parsedComp);
+        
+        setActiveDataset({
+          name: 'synthetic_patients(1)(1).csv',
+          size: `${Math.round(new Blob([patientsText]).size / 1024)} KB`,
+          isSecured: true
+        });
+
+        setStats({
+          totalRecords: parsedPatients.records.length,
+          detectedFields: parsedPatients.headers.length,
+          missingValues: parsedPatients.missingValues,
+          riskLevel: 'Low'
+        });
+
+        addActivity(`Loaded ${parsedPatients.records.length} records dynamically.`);
+
+      } catch (err) {
+        console.error('Failed to load initial datasets', err);
+        addToast('Failed to dynamically load initial datasets', 'error');
+      }
+    };
+    
+    loadDatasets();
+  }, []);
+
   // Toggle dark/light theme
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -110,7 +154,7 @@ export default function App() {
   // Synthesis completed callback
   const handleSynthesisComplete = (numRows) => {
     setActiveDataset({
-      name: 'synthetic_patient_dataset.csv',
+      name: 'synthetic_patients(1)(1).csv',
       size: `${Math.round(numRows * 0.0164)} KB`,
       isSecured: true
     });
@@ -186,8 +230,17 @@ export default function App() {
               });
               addToast(`CSV loaded. Parsed ${result.records.length} records.`, 'success');
               addActivity(`Uploaded clinical CSV records: ${file.name}`);
+            } else if (file.name.endsWith('.txt')) {
+              const result = parseEvaluationText(content);
+              if (result) {
+                setEvalStats(result);
+                addToast(`Evaluation Report parsed successfully.`, 'success');
+                addActivity(`Uploaded Evaluation text report: ${file.name}`);
+              } else {
+                throw new Error('Invalid Evaluation text format.');
+              }
             } else {
-              throw new Error('Unsupported file extension. Please upload a .json or .csv file.');
+              throw new Error('Unsupported file extension. Please upload a .json, .csv, or .txt file.');
             }
           } catch (error) {
             addToast(`Parsing Error: ${error.message}`, 'error');
@@ -206,11 +259,15 @@ export default function App() {
       case 'source':
         return <SourceData patients={patients} stats={stats} piiLogs={piiLogs} />;
       case 'synthesis':
-        return <AISynthesis onSynthesisComplete={handleSynthesisComplete} isSecured={activeDataset.isSecured} />;
+        return <AISynthesis onSynthesisComplete={handleSynthesisComplete} isSecured={activeDataset.isSecured} patients={patients} />;
       case 'analytics':
-        return <Analytics onExplain={triggerChatbot} />;
+        return (
+          <DebugBoundary>
+            <Analytics onExplain={triggerChatbot} comparisonData={comparisonData} patients={patients} evalStats={evalStats} />
+          </DebugBoundary>
+        );
       case 'downloads':
-        return <Downloads patients={patients} stats={stats} onAddActivity={addActivity} />;
+        return <Downloads patients={patients} comparisonData={comparisonData} stats={stats} evalStats={evalStats} onAddActivity={addActivity} />;
       case 'settings':
         return renderSettingsPage();
       default:
@@ -241,6 +298,9 @@ export default function App() {
         stats={stats}
         activeDataset={activeDataset}
         activityLogs={activityLogs}
+        patients={patients}
+        comparisonData={comparisonData}
+        evalStats={evalStats}
         setActiveTab={setActiveTab}
         triggerChatbot={triggerChatbot}
       />
@@ -471,8 +531,8 @@ export default function App() {
                         <span style={{ fontWeight: 700, color: piiLogs.length > 0 ? '#EF4444' : '#10B981' }}>{piiLogs.length}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Fidelity Rate:</span>
-                        <span style={{ fontWeight: 700, color: 'var(--color-warning)' }}>{activeDataset.isSecured ? '78.4%' : 'N/A'}</span>
+                        <span style={{ color: 'var(--text-secondary)' }}>Quality Rate:</span>
+                        <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{activeDataset.isSecured ? `${evalStats?.overallScore || 0}%` : 'N/A'}</span>
                       </div>
                     </div>
                   </div>
@@ -825,7 +885,8 @@ export default function App() {
         activeDataset={activeDataset} 
         patients={patients} 
         piiLogs={piiLogs} 
-        triggeredMessage={triggeredMessage} 
+        triggeredMessage={triggeredMessage}
+        comparisonData={comparisonData} 
       />
     </div>
   );

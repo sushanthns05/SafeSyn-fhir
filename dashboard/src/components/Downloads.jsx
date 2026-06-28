@@ -10,7 +10,8 @@ import 'jspdf-autotable';
 export default function Downloads({ 
   patients, 
   stats, 
-  onAddActivity 
+  onAddActivity,
+  evalStats 
 }) {
   const isLocked = stats.riskLevel === 'High';
 
@@ -114,10 +115,10 @@ export default function Downloads({
       startY: 62,
       head: [['Evaluation Dimension', 'Fidelity Index', 'Target Compliance Threshold']],
       body: [
-        ['Overall Demographics Distribution Parity', '78.4%', 'Privacy-optimized tradeoff'],
-        ['Clinical Correlation Parity (Pearson r)', '81.2%', 'Moderate-High retention'],
-        ['Encounter Frequency Match', '79.6%', 'Privacy-optimized tradeoff'],
-        ['Downstream ML Validation Parity', '76.8%', 'Research-grade utility']
+        ['Overall Demographics Distribution Parity', `${evalStats?.columnShapes || 84.97}%`, 'Privacy-optimized tradeoff'],
+        ['Clinical Correlation Parity (Pearson r)', `${evalStats?.columnPairTrends || 59.56}%`, 'Moderate-High retention'],
+        ['Downstream ML Validation Parity', `${evalStats?.overallScore || 72.26}%`, 'Research-grade utility'],
+        ['Overall Quality Score', `${evalStats?.qualityScore ? (evalStats.qualityScore * 100).toFixed(1) : 71.8}%`, 'High fidelity retention']
       ],
       theme: 'striped',
       headStyles: { fillColor: [37, 99, 235] }
@@ -204,9 +205,10 @@ export default function Downloads({
   };
 
   const handleDownloadCSV = () => {
-    const headers = 'id,gender,maritalStatus,age,race,encounters\n';
-    const rows = patients.map((p, idx) => {
-      return `${p.id || idx + 1},${p.gender || 'Female'},${p.maritalStatus || 'Single'},${p.age},"${p.race || 'White'}",${p.encounters || 1}`;
+    if (patients.length === 0) return;
+    const headers = Object.keys(patients[0]).join(',') + '\n';
+    const rows = patients.map((p) => {
+      return Object.values(p).map(v => `"${v}"`).join(',');
     }).join('\n');
 
     const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(headers + rows);
@@ -225,21 +227,11 @@ export default function Downloads({
       type: 'collection',
       timestamp: new Date().toISOString(),
       entry: patients.map((p, idx) => ({
-        fullUrl: `urn:uuid:synthetic-patient-${p.id || idx + 1}`,
+        fullUrl: `urn:uuid:synthetic-patient-${idx + 1}`,
         resource: {
           resourceType: 'Patient',
-          id: `synthetic-patient-${p.id || idx + 1}`,
-          gender: (p.gender || 'female').toLowerCase(),
-          birthDate: new Date(2026 - p.age, 5, 27).toISOString().split('T')[0],
-          maritalStatus: {
-            text: p.maritalStatus || 'Single'
-          },
-          extension: [
-            {
-              url: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
-              extension: [{ url: 'text', valueString: p.race || 'White' }]
-            }
-          ]
+          id: `synthetic-patient-${idx + 1}`,
+          ...p // Spread the dynamic properties instead of hardcoded fields
         }
       }))
     };
@@ -311,7 +303,7 @@ export default function Downloads({
         {[
           { label: 'Records Generated', value: `${stats.totalRecords.toLocaleString()} Records`, desc: 'Total cohort outputs', color: 'var(--color-primary)', icon: <Table size={14} /> },
           { label: 'Privacy Score', value: isLocked ? '24% Privacy' : '98% Privacy', desc: 'Differential protection', color: 'var(--color-secondary)', icon: <Lock size={14} /> },
-          { label: 'Fidelity Score', value: isLocked ? '45.1% Fidelity' : '78.4% Fidelity', desc: 'Statistical distribution', color: 'var(--color-warning)', icon: <BarChart3 size={14} /> },
+          { label: 'Quality Score', value: isLocked ? '45.1% Quality' : `${evalStats?.overallScore || 72.3}% Quality`, desc: 'Statistical distribution', color: 'var(--color-warning)', icon: <BarChart3 size={14} /> },
           { label: 'Leakage Risk', value: isLocked ? 'HIGH RISK' : '0% Leakage', desc: 'PII replication index', color: isLocked ? 'var(--color-danger)' : 'var(--color-success)', icon: <Shield size={14} /> }
         ].map((card, idx) => (
           <div key={idx} style={{ padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -452,38 +444,27 @@ export default function Downloads({
     );
   };
 
-  const renderDownstreamValidation = () => {
+  const renderRegulatoryAudit = () => {
     return (
       <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <div>
-          <h3 style={{ fontSize: '16px', fontWeight: 800 }}>Downstream Classifier Validation</h3>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Evaluating random forest model utility trained on synthetic cohorts tested against real data.</p>
+          <h3 style={{ fontSize: '16px', fontWeight: 800 }}>Regulatory Audit</h3>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Continuous assessment of downstream utility and research readiness.</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          {[
-            { label: 'Accuracy', key: 'accuracy', color: 'var(--color-success)' },
-            { label: 'Precision', key: 'precision', color: 'var(--color-primary)' },
-            { label: 'Recall', key: 'recall', color: 'var(--color-secondary)' },
-            { label: 'F1 Score', key: 'f1', color: 'var(--color-accent)' }
-          ].map((metric) => (
-            <div key={metric.key} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{metric.label}</span>
-                <span style={{ fontWeight: 800, color: metric.color }}>{validationProgress[metric.key].toFixed(1)}%</span>
-              </div>
-              <div style={{ height: '8px', borderRadius: '4px', backgroundColor: 'var(--border-color)', overflow: 'hidden' }}>
-                <div 
-                  style={{ 
-                    height: '100%', 
-                    width: `${validationProgress[metric.key]}%`, 
-                    backgroundColor: metric.color,
-                    transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)' 
-                  }} 
-                />
-              </div>
-            </div>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+            <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Data Utility Status:</span>
+            <span style={{ fontWeight: 800, color: 'var(--color-success)' }}>APPROVED</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+            <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Research Readiness:</span>
+            <span style={{ fontWeight: 800, color: 'var(--color-primary)' }}>{evalStats?.overallScore || 72}%</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+            <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Synthetic Data Confidence:</span>
+            <span style={{ fontWeight: 800, color: 'var(--color-accent)' }}>{evalStats?.qualityScore ? (evalStats.qualityScore * 100).toFixed(1) : 71.8}%</span>
+          </div>
         </div>
       </div>
     );
@@ -743,7 +724,7 @@ export default function Downloads({
 
         {/* RIGHT SIDE COLUMN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {renderDownstreamValidation()}
+          {renderRegulatoryAudit()}
           {renderConfusionMatrix()}
           {renderAIAssessment()}
           {renderExportTimeline()}

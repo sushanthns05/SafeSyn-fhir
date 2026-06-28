@@ -24,18 +24,11 @@ export default function SourceData({
   // Filter & Search logic for Patient Table
   const filteredPatients = useMemo(() => {
     return patients.filter(p => {
-      const matchesSearch = 
-        p.gender?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.maritalStatus?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.race?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.conditions?.some(c => c.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      const matchesGender = genderFilter === 'All' || p.gender === genderFilter;
-      const matchesMarital = maritalFilter === 'All' || p.maritalStatus === maritalFilter;
-
-      return matchesSearch && matchesGender && matchesMarital;
+      if (!searchTerm) return true;
+      const allValues = Object.values(p).join(' ').toLowerCase();
+      return allValues.includes(searchTerm.toLowerCase());
     });
-  }, [patients, searchTerm, genderFilter, maritalFilter]);
+  }, [patients, searchTerm]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
@@ -466,22 +459,12 @@ export default function SourceData({
             <div style={{ display: 'flex', gap: '8px' }}>
               <input 
                 type="text" 
-                placeholder="Search..." 
+                placeholder="Search across all fields..." 
                 className="form-input"
-                style={{ fontSize: '11px', padding: '6px 10px', width: '120px' }}
+                style={{ fontSize: '11px', padding: '6px 10px', width: '200px' }}
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
               />
-              <select 
-                className="form-input"
-                style={{ fontSize: '11px', padding: '4px', width: '90px' }}
-                value={genderFilter}
-                onChange={(e) => { setGenderFilter(e.target.value); setCurrentPage(1); }}
-              >
-                <option value="All">All Genders</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
             </div>
           </div>
 
@@ -489,34 +472,27 @@ export default function SourceData({
             <table className="custom-table text-xs">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Age</th>
-                  <th>Gender</th>
-                  <th>Race</th>
-                  <th>Marital Status</th>
-                  <th>Diagnoses</th>
-                  <th>Encounters</th>
+                  <th>Row #</th>
+                  {patients.length > 0 && Object.keys(patients[0]).map((key) => (
+                    <th key={key}>{key.replace(/_/g, ' ').toUpperCase()}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {paginatedPatients.length > 0 ? (
                   paginatedPatients.map((p, idx) => (
-                    <tr key={p.id || idx}>
-                      <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{p.id || idx + 1}</td>
-                      <td>{p.age}</td>
-                      <td>{p.gender}</td>
-                      <td style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.race}</td>
-                      <td>{p.maritalStatus}</td>
-                      <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.conditions?.join(', ')}>
-                        {p.conditions?.slice(0, 1).join(', ') || 'No diagnosis'}
-                        {p.conditions?.length > 1 ? '...' : ''}
-                      </td>
-                      <td style={{ fontWeight: 600 }}>{p.encounters || p.encounterCount || 0}</td>
+                    <tr key={idx}>
+                      <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                      {Object.values(p).map((val, colIdx) => (
+                        <td key={colIdx} style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {String(val)}
+                        </td>
+                      ))}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+                    <td colSpan={patients.length > 0 ? Object.keys(patients[0]).length + 1 : 1} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
                       No patients match current filters.
                     </td>
                   </tr>

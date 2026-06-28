@@ -37,7 +37,9 @@ export default function DashboardOverview({
   activeDataset, 
   activityLogs, 
   setActiveTab, 
-  triggerChatbot 
+  triggerChatbot,
+  patients,
+  evalStats
 }) {
   const [activeChartTab, setActiveChartTab] = useState('age');
 
@@ -45,6 +47,50 @@ export default function DashboardOverview({
 
   // Derive privacy score from the dataset state
   const privacyScore = isSecured ? 98.4 : 32.5;
+
+  const ageBuckets = [0, 0, 0, 0, 0];
+  let maleSynth = 0; let femaleSynth = 0;
+  
+  if (patients && patients.length > 0) {
+    patients.forEach(p => {
+      const a = Number(p.age);
+      if (!isNaN(a)) {
+        if (a <= 3) ageBuckets[0]++;
+        else if (a <= 18) ageBuckets[1]++;
+        else if (a <= 49) ageBuckets[2]++;
+        else if (a <= 69) ageBuckets[3]++;
+        else ageBuckets[4]++;
+      }
+      
+      const g = p.gender ? p.gender.toLowerCase() : '';
+      if (g === 'male') maleSynth++;
+      else if (g === 'female') femaleSynth++;
+    });
+  }
+  
+  const totalSynthAge = ageBuckets.reduce((a, b) => a + b, 0) || 1;
+  const synthAgePercents = ageBuckets.map(b => Number(((b / totalSynthAge) * 100).toFixed(1)));
+  
+  const totalSynthGender = (maleSynth + femaleSynth) || 1;
+  const synthMaleP = Number(((maleSynth / totalSynthGender) * 100).toFixed(1));
+  const synthFemaleP = Number(((femaleSynth / totalSynthGender) * 100).toFixed(1));
+
+  // Evaluation Metrics Helpers
+  const getQualityColor = (score) => {
+    if (score >= 80) return 'var(--color-success)';
+    if (score >= 70) return '#F59E0B'; // Orange
+    return 'var(--color-danger)';
+  };
+
+  const getQualityGrade = (score) => {
+    if (score >= 90) return 'A';
+    if (score >= 80) return 'A-';
+    if (score >= 70) return 'B';
+    if (score >= 60) return 'C';
+    return 'D';
+  };
+
+  const qualityColor = getQualityColor(evalStats?.overallScore || 0);
 
   // Chart data
   const ageData = {
@@ -60,7 +106,7 @@ export default function DashboardOverview({
       },
       {
         label: 'Synthetic Patients (%)',
-        data: isSecured ? [18.5, 12.8, 42.3, 17.1, 9.3] : [0, 0, 0, 0, 0],
+        data: isSecured ? synthAgePercents : [0, 0, 0, 0, 0],
         backgroundColor: 'rgba(124, 58, 237, 0.65)',
         borderColor: '#7C3AED',
         borderWidth: 1,
@@ -107,7 +153,7 @@ export default function DashboardOverview({
     labels: ['Female', 'Male'],
     datasets: [
       {
-        data: isSecured ? [55.6, 44.4] : [0, 0],
+        data: isSecured ? [synthFemaleP, synthMaleP] : [0, 0],
         backgroundColor: ['rgba(124, 58, 237, 0.7)', 'rgba(168, 85, 247, 0.7)'],
         borderColor: ['#7C3AED', '#A855F7'],
         borderWidth: 1
@@ -159,7 +205,7 @@ export default function DashboardOverview({
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--gradient-glow)', border: '1px solid var(--glass-border)', padding: '4px 10px', borderRadius: '99px' }}>
               <span className="pulsing-indicator-dot active" />
               <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                AI Synthesizer: {isSecured ? 'Optimal (78.4% Fidelity)' : 'Awaiting Synthesis Run'}
+                AI Synthesizer: {isSecured ? `Optimal (${evalStats?.overallScore || 0}% Quality)` : 'Awaiting Synthesis Run'}
               </span>
             </div>
           </div>
@@ -238,14 +284,25 @@ export default function DashboardOverview({
                 <span style={{ fontWeight: 700, fontFamily: 'monospace' }}>ε = 4.5</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>PII Violations:</span>
-                <span style={{ fontWeight: 700, color: isSecured ? 'var(--color-success)' : 'var(--color-danger)' }}>
-                  {isSecured ? '0 Violations' : `${stats.detectedFields} Types Detected`}
+                <span style={{ color: 'var(--text-secondary)' }}>Missing Values:</span>
+                <span style={{ fontWeight: 700, color: stats.missingValues > 0 ? 'var(--color-warning)' : 'var(--color-success)' }}>
+                  {stats.missingValues} Missing
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Fidelity Index:</span>
-                <span style={{ fontWeight: 700, color: 'var(--color-warning)' }}>78.4%</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid var(--border-color)', paddingTop: '8px', marginTop: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', alignItems: 'center' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Quality Rate:</span>
+                  <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{isSecured ? `${evalStats?.overallScore || 0}%` : 'N/A'}</span>
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                  Overall statistical similarity between original and synthetic data.
+                </div>
+                {isSecured && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '2px' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Quality Grade:</span>
+                    <span style={{ fontWeight: 800, color: qualityColor }}>{getQualityGrade(evalStats?.overallScore || 0)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -355,27 +412,27 @@ export default function DashboardOverview({
 
         <div className="glass-panel metric-card glass-panel-hover">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Differential Privacy</span>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Missing Values</span>
             <Lock size={16} style={{ color: 'var(--color-secondary)' }} />
           </div>
           <span className="metric-value" style={{ color: 'var(--color-secondary)' }}>
-            ε = 4.5
+            {stats.missingValues}
           </span>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
-            Calibrated Laplace Noise
+            Across all columns
           </span>
         </div>
 
         <div className="glass-panel metric-card glass-panel-hover">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>EHR Cohort Fidelity</span>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Features</span>
             <Sparkles size={16} style={{ color: 'var(--color-accent)' }} />
           </div>
           <span className="metric-value" style={{ color: 'var(--color-accent)' }}>
-            78.4% Match
+            {stats.detectedFields}
           </span>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
-            Downstream model retention target
+            Detected in dataset
           </span>
         </div>
 

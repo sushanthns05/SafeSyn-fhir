@@ -30,7 +30,8 @@ ChartJS.register(
 
 export default function AISynthesis({ 
   onSynthesisComplete,
-  isSecured
+  isSecured,
+  patients = []
 }) {
   const [selectedModel, setSelectedModel] = useState('gemma');
   const [syntheticRows, setSyntheticRows] = useState(5000);
@@ -518,60 +519,26 @@ export default function AISynthesis({
               <thead>
                 <tr>
                   <th>Synth ID</th>
-                  <th>Age Range</th>
-                  <th>Gender</th>
-                  <th>Race</th>
-                  <th>Marital Status</th>
-                  <th>Simulated Diagnosis</th>
+                  {patients.length > 0 && Object.keys(patients[0]).slice(0, 5).map(key => (
+                    <th key={key}>{key.replace(/_/g, ' ').toUpperCase()}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {trainingComplete ? (
-                  <>
-                    <tr>
-                      <td>#SYN-001</td>
-                      <td>Adult (19-49)</td>
-                      <td>Female</td>
-                      <td>White</td>
-                      <td>Married</td>
-                      <td>Type 2 Diabetes Mellitus</td>
+                  patients.slice(0, 5).map((p, idx) => (
+                    <tr key={idx}>
+                      <td>#SYN-{(idx + 1).toString().padStart(3, '0')}</td>
+                      {Object.values(p).slice(0, 5).map((val, colIdx) => (
+                        <td key={colIdx} style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {String(val)}
+                        </td>
+                      ))}
                     </tr>
-                    <tr>
-                      <td>#SYN-002</td>
-                      <td>Senior (50-69)</td>
-                      <td>Male</td>
-                      <td>Black/AA</td>
-                      <td>Single</td>
-                      <td>Hypertension / Essential</td>
-                    </tr>
-                    <tr>
-                      <td>#SYN-003</td>
-                      <td>Adult (19-49)</td>
-                      <td>Female</td>
-                      <td>Asian</td>
-                      <td>Married</td>
-                      <td>Chronic Kidney Disease</td>
-                    </tr>
-                    <tr>
-                      <td>#SYN-004</td>
-                      <td>Pediatric (0-3)</td>
-                      <td>Male</td>
-                      <td>White</td>
-                      <td>Single</td>
-                      <td>Acute Bronchitis</td>
-                    </tr>
-                    <tr>
-                      <td>#SYN-005</td>
-                      <td>Geriatric (70+)</td>
-                      <td>Female</td>
-                      <td>Other</td>
-                      <td>Single</td>
-                      <td>Osteoarthritis</td>
-                    </tr>
-                  </>
+                  ))
                 ) : (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                    <td colSpan={patients.length > 0 ? Math.min(Object.keys(patients[0]).length + 1, 6) : 6} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
                       Launch AI Synthesis training to populate the synthetic spreadsheet preview.
                     </td>
                   </tr>
